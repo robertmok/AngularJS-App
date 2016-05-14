@@ -1,0 +1,47 @@
+body {
+    margin: 50px;
+    background-color: black;
+}
+
+.top{
+    border-radius: 25px;
+    padding: 10px; 
+    padding-top: 20px;
+    background-color: white;
+    border: 8px solid lightblue;
+}
+
+.middle{
+    border-radius: 25px;
+    padding: 10px; 
+    padding-top: 20px;
+    background-color: white;
+    border: 8px solid lightblue;
+}
+
+
+.bottom{
+    border-radius: 25px;
+    padding: 10px; 
+    padding-top: 20px;
+    background-color: white;
+    border: 8px solid lightblue;
+}
+
+#warning{
+    font-weight: bold;
+    color: red;
+}
+
+h1 {
+    margin: 0px;
+    padding: 0px; 
+}
+
+#item2{
+    margin-left: 100px;
+}
+
+#item3{
+    margin-left: 5px;
+}

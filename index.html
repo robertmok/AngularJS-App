@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<link rel="stylesheet" type="text/css" href="TLstyle.css">
+
+<title>
+Todo List
+</title>
+    
+<script>
+var app = angular.module('myApp', []);
+
+app.directive('myDirective', function() {
+    return {
+        require: 'ngModel',
+        link: function(scope, element, attr, mCtrl) {
+            function myValidation(value) {
+                var x;
+                var dup = 0;
+                for(x = 0; x < scope.todo.length; x++){
+                    if (scope.todo[x].task == value){
+                        dup = 1;
+                    }
+                }
+                if (dup == 0){
+                    mCtrl.$setValidity('dupTask', true);
+                } else {
+                    mCtrl.$setValidity('dupTask', false);
+                }
+                return value;
+            }
+            mCtrl.$parsers.push(myValidation);
+        }
+    };
+});
+
+app.directive('myDirectiveNext', function() {
+    return {
+        require: 'ngModel',
+        link: function(scope, element, attr, mCtrl) {
+            function myValidation(value) {
+                var x;
+                var dup = 0;
+                for(x = 0; x < scope.todo.length; x++){
+                    if (scope.todo[x].description == value){
+                        dup = 1;
+                    }
+                }
+                if (dup == 0){
+                    mCtrl.$setValidity('dupTask', true);
+                } else {
+                    mCtrl.$setValidity('dupTask', false);
+                }
+                return value;
+            }
+            mCtrl.$parsers.push(myValidation);
+        }
+    };
+});
+    
+app.service('moveDone', function() {
+    this.moveFunc = function (tlist,clist) {
+        var i;
+        for (i = 0; i < tlist.length; i++) {
+            if (tlist[i].complete == true) {
+                var movetask = angular.copy(tlist[i]);
+                clist.push(movetask);
+                tlist.splice(i, 1);  
+                i--;
+            }
+        }
+    }
+});
+    
+app.filter('noDuplicate', function() {
+    return function(tlist) {
+        var fixed = [];
+        var x;
+        var y;
+        var dup = 0;
+        for(x = 0; x < tlist.length; x++){
+            for(y = 0; y < fixed.length; y++){
+                if(tlist[x].task == fixed[y].task ){
+                    dup = 1;
+                }
+            }
+            if(dup == 0){
+                fixed.push(tlist[x]);
+            }
+            dup = 0;
+        }
+        return fixed;
+    };
+});
+    
+app.controller('myControl', function($scope, $http, moveDone, $filter) {
+    $http.get('todo.json').then(
+        function(response){
+            $scope.todo = response.data.todo;
+        },
+        function(data){
+            $scope.err = "Error: Cannot find todo.json file!";   
+        }                   
+    );
+    
+/*    $scope.todo = [ { task:'Task 1', complete:false, description:'this is task 1' },         
+                      { task:'Task 2', complete:false, description:'this is task 2' },
+                      { task:'Task 2', complete:false, description:'this is task 2' }
+                    ];*/
+    //$scope.donelist = [ { task: 'Task A', complete:true, description:'done task A' } ];
+    $scope.donelist = [];
+    
+    $scope.add = function() {
+        $scope.todo.push( { task:$scope.taskname, complete:false, description:$scope.info } );
+        $scope.taskname = "";
+        $scope.info = "";
+    };
+    
+    $scope.remove = function(element){
+        var index = $scope.todo.indexOf(element);
+            $scope.todo.splice(index, 1);   
+
+    }
+    
+   $scope.completed = function(){
+        moveDone.moveFunc($scope.todo, $scope.donelist);
+   }
+   
+   $scope.duplicate = function(){
+        $scope.todo = $filter('noDuplicate')($scope.todo);
+   }   
+});
+     
+</script>    
+</head>
+
+<body>
+<div ng-app="myApp" ng-controller="myControl">
+    <section class="top">
+    <div class="container">
+    <form class="form-horizontal" role="form" name = "taskForm">
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="top"> <h4> Task Name: </h4> </label>
+                <div class="col-sm-10">
+                    <input id="top" class="form-control input-lg" name = "nameInput" type="text" placeholder="Enter task name ..." ng-model="taskname" required my-directive>
+                    <span id="warning" ng-show="!taskForm.nameInput.$error.required && taskForm.nameInput.$dirty && taskForm.nameInput.$invalid"> There is already a task with the same name in the todo list! </span>
+                </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="top"> <h4> Description: </h4> </label>
+                <div class="col-sm-10">
+                    <input id="top" class="form-control input-lg" name = "descriptionInput" type="text" placeholder="Enter task description ..." ng-model="info" required my-directive-next>
+                    <span id="warning" ng-show="!taskForm.descriptionInput.$error.required && taskForm.descriptionInput.$dirty && taskForm.descriptionInput.$invalid"> There is already a task with the same description in the todo list! </span>
+                </div>
+        </div>
+        <div class="form-group">        
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="button" class="btn btn-success" ng-click="add()">Add Task</button>
+            </div>
+        </div>
+    </form>
+    </div>
+    </section>
+    
+    <br>
+    <br>
+    
+    <section class="middle">
+    <div class="container">
+    <h1> Todo List </h1>
+    <br>
+    <div id="warning"> {{ err }} </div>
+    <div ng-include="'tasklist.html'"> </div>
+    <button type="button" class="btn btn-primary" ng-click="duplicate()">Remove Duplicate Tasks</button>
+    <button type="button" class="btn btn-primary" ng-click="completed()">Clear Completed Tasks</button>
+    
+    </div>
+    </section>
+    
+    <br>
+    
+    <section class="bottom">
+    <div class="container">    
+    <h1> Completed List </h1>
+    <br>
+    <ul class="list-group">
+    <li class="list-group-item" ng-repeat="y in donelist">
+        <h4 class="list-group-item-heading"> {{ y.task }} </h4>
+<!--        <span> {{ y.complete }} </span>
+        <br>-->
+        <span class="list-group-item-text"> {{ y.description }} </span>
+    </li>
+    </ul>
+    </div>
+    </section>
+    
+</div> 
+    
+</body>
+</html>

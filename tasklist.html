@@ -1,0 +1,11 @@
+<ul class="list-group">
+    <li class="list-group-item" ng-repeat="x in todo">
+        <h4 class="list-group-item-heading"> {{ x.task }} 
+        <input id="item2" type="checkbox" ng-model="x.complete"/>
+        <button id="item3" type="button" class="btn btn-danger" ng-click="remove(x)"> <span class="glyphicon glyphicon-remove"> </button> 
+        </h4>
+        <!--<span> {{ x.complete }} </span>
+        <br>-->
+        <span class="list-group-item-text"> {{ x.description }} </span>
+    </li>
+</ul>
