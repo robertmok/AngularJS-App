@@ -14,4 +14,4 @@ If for some reason the user has added a duplicate task of the same name, clickin
 
 Users can also remove a task by clicking the X button beside the task.
 
-This application is responsive and asychronous.
+This application is responsive and asynchronous.
